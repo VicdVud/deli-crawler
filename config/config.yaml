@@ -1,0 +1,19 @@
+# deli后台登录账号密码
+deli:
+  mobile: 13000000001
+  password: 123456
+
+crawl:
+  spec: 0 0 */1 * * ?
+  concurrency_num: 3
+  # 抓取提留时间，避免被封 IP，支持 Duration 格式，比如 20s
+  sleep: 20s
+
+storage:
+  driver: mysql
+  user: root
+  password:
+  host: 192.168.1.10
+  port: 3306
+  dbname: deli
+  charset: utf8mb4
