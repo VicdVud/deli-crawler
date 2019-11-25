@@ -5,6 +5,7 @@ import "github.com/spf13/viper"
 type deliInfo struct {
 	Mobile   string // 手机号
 	Password string // 密码（加密后）
+	SaveDir  string // 下载的Excel保存文件夹路径
 
 	Cookie struct {
 		GrUserId       string
@@ -23,6 +24,8 @@ var Deli = &deliInfo{}
 func InitDeliInfo() {
 	Deli.Mobile = viper.GetString("deli.mobile")
 	Deli.Password = viper.GetString("deli.password")
+	Deli.SaveDir = viper.GetString("excel.dir")
+
 	Deli.Cookie.GrUserId = viper.GetString("cookie.gr_user_id")
 	Deli.Cookie.Sensorsdata = viper.GetString("cookie.sensorsdata")
 	Deli.Cookie.GrwngUid = viper.GetString("cookie.grwng_uid")

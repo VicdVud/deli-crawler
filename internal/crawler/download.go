@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"github.com/VicdVud/deli-crawler/internal/global"
 	"github.com/gocolly/colly"
 	"log"
 	"os"
@@ -35,7 +36,7 @@ func (d *download) DownloadFile(year, month, day int) error {
 
 	cc.OnResponse(func(r *colly.Response) {
 		if 200 == r.StatusCode {
-			excelName := fmt.Sprintf("%d-%d-%d.xlsx", year, month, day)
+			excelName := global.Deli.SaveDir + fmt.Sprintf("%d-%d-%d.xlsx", year, month, day)
 			excel, err := os.OpenFile(excelName, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 			if err != nil {
 				log.Fatal("Cannot create file: " + excelName)

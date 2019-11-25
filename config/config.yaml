@@ -18,6 +18,9 @@ storage:
   dbname: deli
   charset: utf8mb4
 
+excel:
+    dir: E:/GitHub/deli-crawler/excel/
+
 cookie:
   gr_user_id: 
   sensorsdata: 

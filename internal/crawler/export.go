@@ -20,12 +20,23 @@ type exportExcel struct {
 var exportExcelDefault = &exportExcel{}
 var exportCookie string
 
+// 导出日期
+var exportDate struct {
+	year  int
+	month int
+	day   int
+}
+
 // ExportExcelFile 导出excel文件路径
 // @brief year 考勤年份
 // @brief month 考勤月份
 // @brief day 考勤日期
 func (e *exportExcel) ExportExcelFile(year, month, day int) error {
 	log.Println("Start export excel...")
+
+	exportDate.year = year
+	exportDate.month = month
+	exportDate.day = day
 
 	cc := colly.NewCollector()
 	var err error
@@ -66,7 +77,7 @@ func (e *exportExcel) ExportExcelFile(year, month, day int) error {
 		if 200 == r.StatusCode {
 			if err = json.Unmarshal(r.Body, e); err == nil {
 				// 此处有两种结果，需检查
-				checkExportUrl(year, month, day)
+				checkExportUrl()
 				log.Println("Export excel succeeded")
 				return
 			}
@@ -81,13 +92,16 @@ func (e *exportExcel) ExportExcelFile(year, month, day int) error {
 	return cc.PostRaw(exportUrl, []byte(exportBody))
 }
 
-func checkExportUrl(year, month, day int) {
+// checkExportUrl 检查导出链接
+// 有两种情况，当链接后缀为".xls"时，表明未导出过，为下载链接，可直接下载
+// 否则重定向到导出列表，需重新导出后下载
+func checkExportUrl() {
 	// 若当前为文件下载链接，则后缀为".xls"
 	if strings.Contains(exportExcelDefault.Data.Url, ".xls") {
 		return
 	}
 
-	// 否则，则需重定向，再次获取文件下载链接
+	// 否则，则需重定向，再获取文件下载链接
 	cc := colly.NewCollector()
 
 	cc.OnRequest(func(r *colly.Request) {
@@ -109,12 +123,48 @@ func checkExportUrl(year, month, day int) {
 	cc.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		url := e.Attr("href")
 		keyWord := fmt.Sprintf("%d年%d月%d日至%d年%d月%d日",
-			year, month, day, year, month, day)
+			exportDate.year, exportDate.month, exportDate.day,
+			exportDate.year, exportDate.month, exportDate.day)
 		if strings.Contains(url, keyWord) {
+			// 重新导出excel报表
+			// 获取导出id
+			index := strings.Index(exportExcelDefault.Data.Url, "id=")
+			if index != -1 {
+				reexport(exportExcelDefault.Data.Url[index+3:])
+			}
+
 			exportExcelDefault.Data.Url = url
 		}
 	})
 
 	url := "https://v2-kq.delicloud.com/" + exportExcelDefault.Data.Url
 	cc.Visit(url)
+}
+
+// reexport 重新导出
+// @param exportId 导出id
+func reexport(exportId string) {
+	cc := colly.NewCollector()
+
+	cc.OnRequest(func(r *colly.Request) {
+		// 设置请求头
+		r.Headers.Set("Accept", "*/*")
+		r.Headers.Set("X-Requested-With", "XMLHttpRequest")
+		r.Headers.Set("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36")
+		r.Headers.Set("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+		r.Headers.Set("Sec-Fetch-Site", "same-origin")
+		r.Headers.Set("Sec-Fetch-Mode", "cors")
+		r.Headers.Set("Referer", "https://v2-kq.delicloud.com/admin/export/index")
+		r.Headers.Set("Accept-Encoding", "gzip, deflate, br")
+		r.Headers.Set("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8")
+
+		// 设置Cookie
+		r.Headers.Set("Cookie", exportCookie)
+	})
+
+	url := "https://v2-kq.delicloud.com/" + exportExcelDefault.Data.Url
+	body := fmt.Sprintf("id=%s", exportId)
+
+	cc.PostRaw(url, []byte(body))
+	fmt.Println("abc")
 }
