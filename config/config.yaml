@@ -1,7 +1,7 @@
 # deli后台登录账号密码
 deli:
-  mobile: 13000000001
-  password: 123456
+  mobile: 
+  password: 
 
 crawl:
   spec: 0 0 */1 * * ?
@@ -12,8 +12,18 @@ crawl:
 storage:
   driver: mysql
   user: root
-  password:
+  password: 
   host: 192.168.1.10
   port: 3306
   dbname: deli
   charset: utf8mb4
+
+cookie:
+  gr_user_id: 
+  sensorsdata: 
+  grwng_uid: 
+  gr_session_id_8: 
+  c_gr_session_id: 
+  c_gr_session_id_53: 
+  gr_session_id_9: 
+  gr_session_id_95: 

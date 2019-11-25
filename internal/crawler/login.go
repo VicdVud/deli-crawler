@@ -9,11 +9,6 @@ import (
 )
 
 type login struct {
-	token  string
-	userId string
-}
-
-type LoginResponse struct {
 	Code int    `json:"code"`
 	Msg  string `json:"msg"`
 	Data struct {
@@ -23,12 +18,13 @@ type LoginResponse struct {
 	} `json:"data"`
 }
 
-var Login = &login{}
+var loginDefault = &login{}
 
-func (l *login) UserLogin() {
+func (l *login) UserLogin() error {
 	log.Println("Start login...")
 
 	cc := colly.NewCollector()
+	var err error
 
 	cc.OnRequest(func(r *colly.Request) {
 		// 设置请求头
@@ -45,14 +41,12 @@ func (l *login) UserLogin() {
 
 	cc.OnResponse(func(r *colly.Response) {
 		if 200 == r.StatusCode {
-			var response LoginResponse
-			if err := json.Unmarshal(r.Body, &response); err != nil {
-				log.Fatal(err)
+			if err = json.Unmarshal(r.Body, l); err == nil {
+				log.Println("Login succeeded")
+				return
 			}
-			log.Println("Login succeeded")
-		} else {
-			log.Println("Login failed")
 		}
+		log.Println("Login failed")
 	})
 
 	loginUrl := "https://v2-app.delicloud.com/api/v2.0/auth/loginMobile"
@@ -60,8 +54,5 @@ func (l *login) UserLogin() {
 		global.Deli.Mobile,
 		global.Deli.Password)
 
-	err := cc.PostRaw(loginUrl, []byte(loginBody))
-	if err != nil {
-		log.Fatal(err)
-	}
+	return cc.PostRaw(loginUrl, []byte(loginBody))
 }
