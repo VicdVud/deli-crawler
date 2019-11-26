@@ -3,11 +3,23 @@ deli:
   mobile: 
   password: 
 
+# 导出日期范围
+# 日期可以正常格式如"2019-1-1"
+# 也可为特定词汇today表示今天
+# 当from为today时，表明从今天起，未来每天都只当初当天结果
+# 当from为基础格式时，表明只导出某个时间段内的记录
+date:
+  from: today
+  to: today
+
 crawl:
-  spec: 0 0 */1 * * ?
-  concurrency_num: 3
-  # 抓取提留时间，避免被封 IP，支持 Duration 格式，比如 20s
-  sleep: 20s
+  spec: 0 0 */1 * * *
+  concurrency_num: 1
+  # 抓取提留时间，避免被封 IP，支持 Duration 格式，比如 10s
+  sleep: 10s
+
+log:
+  path: "/log/log.txt"
 
 storage:
   driver: mysql

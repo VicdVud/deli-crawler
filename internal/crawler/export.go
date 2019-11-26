@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/model"
 	"github.com/gocolly/colly"
 	"log"
 	"strings"
@@ -21,22 +22,14 @@ var exportExcelDefault = &exportExcel{}
 var exportCookie string
 
 // 导出日期
-var exportDate struct {
-	year  int
-	month int
-	day   int
-}
+var exportDate model.Date
 
 // ExportExcelFile 导出excel文件路径
-// @brief year 考勤年份
-// @brief month 考勤月份
-// @brief day 考勤日期
-func (e *exportExcel) ExportExcelFile(year, month, day int) error {
+// @brief date 考勤日期
+func (e *exportExcel) ExportExcelFile(date model.Date) error {
 	log.Println("Start export excel...")
 
-	exportDate.year = year
-	exportDate.month = month
-	exportDate.day = day
+	exportDate = date
 
 	cc := colly.NewCollector()
 	var err error
@@ -87,7 +80,8 @@ func (e *exportExcel) ExportExcelFile(year, month, day int) error {
 
 	exportUrl := "https://v2-kq.delicloud.com/attend/admin/check/dayexport"
 	exportBody := fmt.Sprintf("we_id=&tag_id=&staff_ids=&daterange=%d-%d-%d+-+%d-%d-%d&keyword=",
-		year, month, day, year, month, day)
+		exportDate.Year, exportDate.Month, exportDate.Day,
+		exportDate.Year, exportDate.Month, exportDate.Day)
 
 	return cc.PostRaw(exportUrl, []byte(exportBody))
 }
@@ -122,9 +116,9 @@ func checkExportUrl() {
 
 	cc.OnHTML("a[href]", func(e *colly.HTMLElement) {
 		url := e.Attr("href")
-		keyWord := fmt.Sprintf("%d年%d月%d日至%d年%d月%d日",
-			exportDate.year, exportDate.month, exportDate.day,
-			exportDate.year, exportDate.month, exportDate.day)
+		keyWord := fmt.Sprintf("%04d年%02d月%02d日至%04d年%02d月%02d日",
+			exportDate.Year, exportDate.Month, exportDate.Day,
+			exportDate.Year, exportDate.Month, exportDate.Day)
 		if strings.Contains(url, keyWord) {
 			// 重新导出excel报表
 			// 获取导出id
@@ -166,5 +160,4 @@ func reexport(exportId string) {
 	body := fmt.Sprintf("id=%s", exportId)
 
 	cc.PostRaw(url, []byte(body))
-	fmt.Println("abc")
 }

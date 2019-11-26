@@ -13,9 +13,12 @@ var DefaultAttendance = attendanceDB{}
 // 增加一条记录
 func (a attendanceDB) Create(attendance *model.Attendance) error {
 	// 先查询该记录存不存在
-	exist, _ := a.FindOne(attendance.Name, attendance.Date)
-	if exist != nil {
-		// 存在则更新
+	rc, _ := a.FindOne(attendance.Name, attendance.Date)
+	if rc != nil {
+		// 若存在，判断记录是否有改动
+		if attendance.EqualTo(rc) {
+			return nil
+		}
 		return a.Update(attendance)
 	}
 
@@ -53,6 +56,18 @@ func (a attendanceDB) FindOne(name, date string) (*model.Attendance, error) {
 
 // 更新一条记录
 func (a attendanceDB) Update(attendance *model.Attendance) error {
+	strSql := "UPDATE attendance SET name=?,department=?,date=?,week=?,date_type=?,clock_in=?,clock_out=?,duration=?,late=?,leave_early=?,absent=? where name=? and date=?"
+	_, err := masterDB.Exec(strSql, strings.TrimSpace(attendance.Name),
+		strings.TrimSpace(attendance.Department), strings.TrimSpace(attendance.Date),
+		strings.TrimSpace(attendance.Week), strings.TrimSpace(attendance.DateType),
+		strings.TrimSpace(attendance.ClockIn), strings.TrimSpace(attendance.ClockOut),
+		attendance.Duration, attendance.Late,
+		attendance.LeaveEarly, attendance.Absent,
+		strings.TrimSpace(attendance.Name),
+		strings.TrimSpace(attendance.Date))
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
