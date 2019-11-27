@@ -2,9 +2,9 @@ package crawler
 
 import (
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
 	"github.com/VicdVud/deli-crawler/internal/xlsx"
-	"log"
 	"time"
 )
 
@@ -22,19 +22,19 @@ func (c *CollyCrawler) Work() {
 	// 第一步，登录账号
 	err := loginDefault.UserLogin()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// 第二步，获取Owner信息
 	err = ownerDefault.FetchOwner()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// 第三步，获取PHPSESSID
 	err = phpSessionDefault.FetchPhpSession()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// 依据配置文件的导出起始时间与结束时间，执行不同的导出行为
@@ -71,28 +71,28 @@ func (c *CollyCrawler) Work() {
 
 // ExportAndSave 导出excel文件并储存至数据库
 func (c *CollyCrawler) ExportAndSave(date model.Date) {
-	log.Println("")
-	log.Println("+++++++++++++++++++++++")
-	log.Printf("Export record: %s ...", date.ToString())
+	logger.Info("")
+	logger.Info("+++++++++++++++++++++++")
+	logger.Info("Exporting record: " + date.ToString())
 
 	// 第四步，导出excel文件
 	err := exportExcelDefault.ExportExcelFile(date)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// 第五步，下载文件到本地
 	var filePath string
 	filePath, err = downloadDefault.DownloadFile(date)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	// 第六步，储存至数据库
 	err = xlsx.ReadAndSave(filePath)
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
-	log.Println("Save to db successfully, waiting next task...")
+	logger.Info("Save to db successfully, waiting next task...")
 }

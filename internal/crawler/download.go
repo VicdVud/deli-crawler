@@ -3,9 +3,10 @@ package crawler
 import (
 	"fmt"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
+	"github.com/VicdVud/deli-crawler/internal/utils"
 	"github.com/gocolly/colly"
-	"log"
 	"os"
 )
 
@@ -17,7 +18,10 @@ var downloadDefault = &download{}
 // DownloadFile 下载文件
 // 返回文件保存路径
 func (d *download) DownloadFile(date model.Date) (string, error) {
-	log.Println("Download excel...")
+	logger.Info("Downloading excel...")
+
+	// 避免文件夹未创建导致错误
+	utils.CreateDir(global.Deli.SaveDir)
 
 	// 文件保存路径
 	excelPath := global.Deli.SaveDir + fmt.Sprintf("%d-%d-%d.xlsx", date.Year, date.Month, date.Day)
@@ -44,23 +48,23 @@ func (d *download) DownloadFile(date model.Date) (string, error) {
 		if 200 == r.StatusCode {
 			excel, err := os.OpenFile(excelPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 			if err != nil {
-				log.Fatal("Cannot create file: " + excelPath)
+				logger.Fatal("Cannot create file: " + excelPath)
 			}
 			defer excel.Close()
 
 			_, err = excel.Write(r.Body)
 			if err != nil {
-				log.Fatal("Cannot write data to file: " + excelPath + "\n" + err.Error())
+				logger.Fatal("Cannot write data to file: " + excelPath + "\n" + err.Error())
 			}
 
-			log.Println("Download excel succeeded")
+			logger.Info("Download excel succeeded")
 		}
 	})
 
 	downloadUrl := "https://v2-kq.delicloud.com" + exportExcelDefault.Data.Url
 	err := cc.Visit(downloadUrl)
 	if err != nil {
-		fmt.Println(err)
+		logger.Info(err)
 	}
 	return excelPath, err
 }

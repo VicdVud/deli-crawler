@@ -4,8 +4,8 @@ import (
 	"errors"
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/VicdVud/deli-crawler/internal/db"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
-	"log"
 	"strconv"
 )
 
@@ -14,7 +14,7 @@ import (
 func ReadAndSave(path string) error {
 	xlsx, err := excelize.OpenFile(path)
 	if err != nil {
-		log.Println(err)
+		logger.Info(err)
 	}
 
 	// 获取第一分页名称

@@ -9,8 +9,8 @@ deli:
 # 当from为today时，表明从今天起，未来每天都只当初当天结果
 # 当from为基础格式时，表明只导出某个时间段内的记录
 date:
-  from: today
-  to: today
+  from: 2019-11-26
+  to: 2019-11-26
 
 crawl:
   spec: 0 0 */1 * * *
@@ -19,7 +19,7 @@ crawl:
   sleep: 10s
 
 log:
-  path: "/log/log.txt"
+  dir: '/log/'
 
 storage:
   driver: mysql

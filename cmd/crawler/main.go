@@ -3,18 +3,14 @@ package main
 import (
 	"github.com/VicdVud/deli-crawler/internal/crawler"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/utils"
 	"github.com/robfig/cron"
 	"github.com/spf13/viper"
-	"log"
 )
 
-func init() {
-	global.Init()
-}
-
 func main() {
-	log.Println("deli-crawler start...")
+	logger.Info("deli-crawler start...")
 
 	if global.CrawlRegularly() {
 		// 定时爬取

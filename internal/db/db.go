@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/spf13/viper"
-	"log"
 )
 
 var masterDB *sql.DB
@@ -27,13 +27,13 @@ func init() {
 	masterDB, err = sql.Open(viper.GetString("storage.driver"), dsn)
 
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 
 	// 测试数据库连接是否 OK
 	if err = masterDB.Ping(); err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 
-	log.Println("Connect mysql successful")
+	logger.Info("Connect mysql successful")
 }

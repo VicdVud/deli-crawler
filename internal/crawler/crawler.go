@@ -1,14 +1,14 @@
 package crawler
 
 import (
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/spf13/viper"
-	"log"
 	"time"
 )
 
 // DoCrawler 开始爬取
 func DoCrawler() {
-	log.Println("start crawling...")
+	logger.Info("start crawling...")
 
 	// 穿创建工作池
 	concurrencyNum := viper.GetInt("crawl.concurrency_num")

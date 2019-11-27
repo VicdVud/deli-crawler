@@ -1,9 +1,9 @@
 package global
 
 import (
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
 	"github.com/spf13/viper"
-	"log"
 	"strings"
 	"time"
 )
@@ -58,7 +58,7 @@ func InitDeliInfo() {
 	} else {
 		err := Deli.FromDate.FromString(Deli.FromDateString)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 
@@ -71,7 +71,7 @@ func InitDeliInfo() {
 	} else {
 		err := Deli.ToDate.FromString(Deli.ToDateString)
 		if err != nil {
-			log.Fatal(err)
+			logger.Fatal(err)
 		}
 	}
 

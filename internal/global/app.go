@@ -1,6 +1,7 @@
 package global
 
 import (
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/utils"
 	"os"
 	"path/filepath"
@@ -23,7 +24,7 @@ func init() {
 func inferRootDir() string {
 	cwd, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 	var infer func(d string) string
 	infer = func(d string) string {

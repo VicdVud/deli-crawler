@@ -3,8 +3,8 @@ package crawler
 import (
 	"errors"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/gocolly/colly"
-	"log"
 	"strings"
 )
 
@@ -15,7 +15,7 @@ type phpSession struct {
 var phpSessionDefault = &phpSession{}
 
 func (p *phpSession) FetchPhpSession() error {
-	log.Println("Start fetch PHPSESSID...")
+	logger.Info("Start fetch PHPSESSID...")
 
 	cc := colly.NewCollector()
 	var err error
@@ -50,12 +50,12 @@ func (p *phpSession) FetchPhpSession() error {
 			// 故可从重定向的请求头Cookie里找到PHPSESSID
 			p.PhpSessId = parserSessId(r.Request.Headers.Get("Cookie"))
 			if p.PhpSessId != "" {
-				log.Println("Fetch PHPSESSID succeeded")
+				logger.Info("Fetch PHPSESSID succeeded")
 				return
 			}
 		}
 		err = errors.New("Cannot fetch PHPSESSID")
-		log.Println("Fetch PHPSESSID failed")
+		logger.Info("Fetch PHPSESSID failed")
 	})
 
 	if err != nil {

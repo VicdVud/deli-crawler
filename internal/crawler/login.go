@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/gocolly/colly"
-	"log"
 )
 
 type login struct {
@@ -21,7 +21,7 @@ type login struct {
 var loginDefault = &login{}
 
 func (l *login) UserLogin() error {
-	log.Println("Start login...")
+	logger.Info("Start login...")
 
 	cc := colly.NewCollector()
 	var err error
@@ -42,11 +42,11 @@ func (l *login) UserLogin() error {
 	cc.OnResponse(func(r *colly.Response) {
 		if 200 == r.StatusCode {
 			if err = json.Unmarshal(r.Body, l); err == nil {
-				log.Println("Login succeeded")
+				logger.Info("Login succeeded")
 				return
 			}
 		}
-		log.Println("Login failed")
+		logger.Info("Login failed")
 	})
 
 	loginUrl := "https://v2-app.delicloud.com/api/v2.0/auth/loginMobile"

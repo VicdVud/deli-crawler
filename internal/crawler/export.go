@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/VicdVud/deli-crawler/internal/global"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
 	"github.com/gocolly/colly"
-	"log"
 	"strings"
 )
 
@@ -27,7 +27,7 @@ var exportDate model.Date
 // ExportExcelFile 导出excel文件路径
 // @brief date 考勤日期
 func (e *exportExcel) ExportExcelFile(date model.Date) error {
-	log.Println("Start export excel...")
+	logger.Info("Start export excel...")
 
 	exportDate = date
 
@@ -71,11 +71,11 @@ func (e *exportExcel) ExportExcelFile(date model.Date) error {
 			if err = json.Unmarshal(r.Body, e); err == nil {
 				// 此处有两种结果，需检查
 				checkExportUrl()
-				log.Println("Export excel succeeded")
+				logger.Info("Export excel succeeded")
 				return
 			}
 		}
-		log.Println("Export excel failed")
+		logger.Info("Export excel failed")
 	})
 
 	exportUrl := "https://v2-kq.delicloud.com/attend/admin/check/dayexport"
@@ -156,7 +156,7 @@ func reexport(exportId string) {
 		r.Headers.Set("Cookie", exportCookie)
 	})
 
-	url := "https://v2-kq.delicloud.com/" + exportExcelDefault.Data.Url
+	url := "https://v2-kq.delicloud.com/admin/export/re-export"
 	body := fmt.Sprintf("id=%s", exportId)
 
 	cc.PostRaw(url, []byte(body))

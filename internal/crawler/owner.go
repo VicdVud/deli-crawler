@@ -2,37 +2,36 @@ package crawler
 
 import (
 	"encoding/json"
+	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/gocolly/colly"
-	"log"
 )
 
 type owner struct {
-	Code int `json:"code"`
-	Msg string `json:"msg"`
-	Data []struct{
-		OwnerId string `json:"owner_id"`
-		Id string `json:"id"`
-		Name string `json:"name"`
-		Type int `json:"type"`
-		Area string `json:"area"`
-		Address string `json:"address"`
-		Industry string `json:"industry"`
-		Size string `json:"size"`
+	Code int    `json:"code"`
+	Msg  string `json:"msg"`
+	Data []struct {
+		OwnerId    string `json:"owner_id"`
+		Id         string `json:"id"`
+		Name       string `json:"name"`
+		Type       int    `json:"type"`
+		Area       string `json:"area"`
+		Address    string `json:"address"`
+		Industry   string `json:"industry"`
+		Size       string `json:"size"`
 		UpdateTime string `json:"update_time"`
 		CreateTime string `json:"create_time"`
-		OrgExtProp struct{
+		OrgExtProp struct {
 			StructureEnabled string `json:"structure_enabled"`
-			AddUserMode string `json:"add_user_mode"`
+			AddUserMode      string `json:"add_user_mode"`
 		} `json:"org_ext_prop"`
 	} `json:"data"`
 }
-
 
 var ownerDefault = &owner{}
 
 // FetchOwner 提取Owner
 func (o *owner) FetchOwner() error {
-	log.Println("Start fetch owner...")
+	logger.Info("Start fetch owner...")
 
 	cc := colly.NewCollector()
 	var err error
@@ -54,11 +53,11 @@ func (o *owner) FetchOwner() error {
 	cc.OnResponse(func(r *colly.Response) {
 		if 200 == r.StatusCode {
 			if err = json.Unmarshal(r.Body, o); err == nil {
-				log.Println("Fetch owner succeeded")
+				logger.Info("Fetch owner succeeded")
 				return
 			}
 		}
-		log.Println("Fetch owner failed: " + err.Error())
+		logger.Info("Fetch owner failed: " + err.Error())
 	})
 
 	ownerUrl := "https://v2-app.delicloud.com/api/v2.0/org/findOrgDetailByUserId?user_id=" + loginDefault.Data.UserId
