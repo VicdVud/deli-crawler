@@ -7,6 +7,8 @@ import (
 	"strings"
 )
 
+var DATE_LAYOUT = "2006-01-02"
+
 type Date struct {
 	Year  int
 	Month int
@@ -110,4 +112,23 @@ func checkDate(d *Date) {
 // isLeapYear 检查是否闰年
 func isLeapYear(year int) bool {
 	return (year%4 == 0 && year%100 != 0) || (year%400 == 0)
+}
+
+func (d Date) GreaterEqual(other Date) bool {
+	if d.Year > other.Year {
+		return true
+	} else if d.Year < other.Year {
+		return false
+	}
+
+	if d.Month > other.Month {
+		return true
+	} else if d.Month < other.Month {
+		return false
+	}
+
+	if d.Day >= other.Day {
+		return true
+	}
+	return false
 }
