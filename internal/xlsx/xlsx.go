@@ -7,6 +7,7 @@ import (
 	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
 	"strconv"
+	"strings"
 )
 
 // ReadAndSave 读取考勤文件，并上传至数据库
@@ -32,11 +33,13 @@ func ReadAndSave(path string) error {
 			return errors.New("wrong format in xlsx")
 		}
 
+		var date string
+
 		// 每一行存储一条记录
 		attendance := &model.Attendance{}
 		attendance.Name = row[2]
 		attendance.Department = row[3]
-		attendance.Date = row[5]
+		date = row[5]
 		attendance.Week = row[6]
 		attendance.DateType = row[7]
 		attendance.ClockIn = row[11]
@@ -45,6 +48,15 @@ func ReadAndSave(path string) error {
 		attendance.Late, _ = strconv.Atoi(row[15])
 		attendance.LeaveEarly, _ = strconv.Atoi(row[16])
 		attendance.Absent, _ = strconv.Atoi(row[17])
+
+		// 解析日期
+		days := strings.Split(date, "-")
+		if len(days) < 3 {
+			continue
+		}
+		attendance.Year, _ = strconv.Atoi(days[0])
+		attendance.Month, _ = strconv.Atoi(days[1])
+		attendance.Day, _ = strconv.Atoi(days[2])
 
 		// 保存至数据库
 		err := db.DefaultAttendance.Create(attendance)

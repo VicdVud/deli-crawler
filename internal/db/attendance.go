@@ -10,10 +10,10 @@ type attendanceDB struct{}
 
 var DefaultAttendance = attendanceDB{}
 
-// 增加一条记录
+// Create 增加一条记录
 func (a attendanceDB) Create(attendance *model.Attendance) error {
 	// 先查询该记录存不存在
-	rc, _ := a.FindOne(attendance.Name, attendance.Date)
+	rc, _ := a.FindOne(attendance.Name, attendance.Year, attendance.Month, attendance.Day)
 	if rc != nil {
 		// 若存在，判断记录是否有改动
 		if attendance.EqualTo(rc) {
@@ -23,9 +23,10 @@ func (a attendanceDB) Create(attendance *model.Attendance) error {
 	}
 
 	// 否则新增
-	strSql := "INSERT INTO attendance(" + a.fields() + ") VALUES(?,?,?,?,?,?,?,?,?,?,?)"
+	strSql := "INSERT INTO attendance(" + a.fields() + ") VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)"
 	_, err := masterDB.Exec(strSql, strings.TrimSpace(attendance.Name),
-		strings.TrimSpace(attendance.Department), strings.TrimSpace(attendance.Date),
+		strings.TrimSpace(attendance.Department),
+		attendance.Year, attendance.Month, attendance.Day,
 		strings.TrimSpace(attendance.Week), strings.TrimSpace(attendance.DateType),
 		strings.TrimSpace(attendance.ClockIn), strings.TrimSpace(attendance.ClockOut),
 		attendance.Duration, attendance.Late,
@@ -37,15 +38,17 @@ func (a attendanceDB) Create(attendance *model.Attendance) error {
 	return nil
 }
 
-// 查询一条记录
+// FindOne 查询一条记录
 // @param name 姓名
-// @param date 日期
-func (a attendanceDB) FindOne(name, date string) (*model.Attendance, error) {
+// @param year 年份
+// @param month 月份
+// @param day 日期
+func (a attendanceDB) FindOne(name string, year, month, day int) (*model.Attendance, error) {
 	attendance := &model.Attendance{}
 
 	strSql := "SELECT " + a.fields() +
-		" FROM attendance WHERE name=? and date=?"
-	row := masterDB.QueryRow(strSql, name, date)
+		" FROM attendance WHERE name=? and year=? and month=? and day=?"
+	row := masterDB.QueryRow(strSql, name, year, month, day)
 	err := a.scanRow(row, attendance)
 	if err != nil {
 		return nil, err
@@ -54,34 +57,35 @@ func (a attendanceDB) FindOne(name, date string) (*model.Attendance, error) {
 	return attendance, nil
 }
 
-// 更新一条记录
+// Update 更新一条记录
+// 只更新考勤相关数据
 func (a attendanceDB) Update(attendance *model.Attendance) error {
-	strSql := "UPDATE attendance SET name=?,department=?,date=?,week=?,date_type=?,clock_in=?,clock_out=?,duration=?,late=?,leave_early=?,absent=? where name=? and date=?"
-	_, err := masterDB.Exec(strSql, strings.TrimSpace(attendance.Name),
-		strings.TrimSpace(attendance.Department), strings.TrimSpace(attendance.Date),
-		strings.TrimSpace(attendance.Week), strings.TrimSpace(attendance.DateType),
+	strSql := "UPDATE attendance SET date_type=?, clock_in=?,clock_out=?,duration=?,late=?,leave_early=?,absent=? where name=? and year=? and month=? and day=?"
+	_, err := masterDB.Exec(strSql, strings.TrimSpace(attendance.DateType),
 		strings.TrimSpace(attendance.ClockIn), strings.TrimSpace(attendance.ClockOut),
 		attendance.Duration, attendance.Late,
 		attendance.LeaveEarly, attendance.Absent,
 		strings.TrimSpace(attendance.Name),
-		strings.TrimSpace(attendance.Date))
+		attendance.Year, attendance.Month, attendance.Day)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// 获取数据库字段列表
+// fields 获取数据库字段列表
 func (a attendanceDB) fields() string {
-	return "name,department,date,week,date_type,clock_in,clock_out,duration,late,leave_early,absent"
+	return "name,department,year,month,day,week,date_type,clock_in,clock_out,duration,late,leave_early,absent"
 }
 
-// 将查询结果转为结构体
+// scanRow 将查询结果转为结构体
 func (a attendanceDB) scanRow(row *sql.Row, attendance *model.Attendance) error {
 	return row.Scan(
 		&attendance.Name,
 		&attendance.Department,
-		&attendance.Date,
+		&attendance.Year,
+		&attendance.Month,
+		&attendance.Day,
 		&attendance.Week,
 		&attendance.DateType,
 		&attendance.ClockIn,
