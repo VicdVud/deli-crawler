@@ -22,8 +22,7 @@ func (a attendanceDB) Create(attendance *model.Attendance) error {
 		if attendance.EqualTo(rc) {
 			return nil
 		}
-		// return a.Update(attendance)
-		return nil
+		return a.Update(attendance)
 	}
 
 	// 否则新增
@@ -61,13 +60,15 @@ func (a attendanceDB) FindOne(name string, date string) (*model.Attendance, erro
 // Update 更新一条记录
 // 只更新考勤相关数据
 func (a attendanceDB) Update(attendance *model.Attendance) error {
+	year, month, day := attendance.Date.Date()
+	date := fmt.Sprintf("%04d-%02d-%02d", year, month, day)
+
 	strSql := "UPDATE attendance SET date_type=?, clock_in=?,clock_out=?,duration=?,late=?,leave_early=?,absent=? where name=? and date=?"
 	_, err := masterDB.Exec(strSql, strings.TrimSpace(attendance.DateType),
 		strings.TrimSpace(attendance.ClockIn), strings.TrimSpace(attendance.ClockOut),
 		attendance.Duration, attendance.Late,
 		attendance.LeaveEarly, attendance.Absent,
-		strings.TrimSpace(attendance.Name),
-		attendance.Date)
+		strings.TrimSpace(attendance.Name), date)
 	if err != nil {
 		return err
 	}
