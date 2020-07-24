@@ -62,6 +62,8 @@ func (d *download) DownloadFile(date model.Date) (string, error) {
 	})
 
 	downloadUrl := "https://v2-kq.delicloud.com" + exportExcelDefault.Data.Url
+	// logger.Info("Download url:  " + downloadUrl)
+
 	err := cc.Visit(downloadUrl)
 	if err != nil {
 		logger.Info(err)

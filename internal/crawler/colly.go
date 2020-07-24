@@ -1,10 +1,13 @@
 package crawler
 
 import (
+	"fmt"
 	"github.com/VicdVud/deli-crawler/internal/global"
 	"github.com/VicdVud/deli-crawler/internal/logger"
 	"github.com/VicdVud/deli-crawler/internal/model"
 	"github.com/VicdVud/deli-crawler/internal/xlsx"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -76,9 +79,42 @@ func (c *CollyCrawler) ExportAndSave(date model.Date) {
 	logger.Info("Exporting record: " + date.ToString())
 
 	// 第四步，导出excel文件
-	err := exportExcelDefault.ExportExcelFile(date)
-	if err != nil {
-		logger.Fatal(err)
+	var err error
+
+	// deli考勤报表导出机制有改变，在提交导出申请后，需等待一段时间后才可下载
+	keyWord := fmt.Sprintf("%04d年%02d月%02d日至%04d年%02d月%02d日",
+		date.Year, date.Month, date.Day,
+		date.Year, date.Month, date.Day)
+
+	// 重新获取次数限制
+	exportMaxCount := 10
+	exportCurCount := 0
+
+	logger.Info("Start export excel...")
+
+	for {
+		exportCurCount++
+
+		err = exportExcelDefault.ExportExcelFile(date)
+		if err != nil {
+			logger.Fatal(err)
+		}
+
+		if strings.Contains(exportExcelDefault.Data.Url, keyWord) {
+			// 获取到导出的excel下载路径
+			logger.Info("Export excel succeeded")
+			break
+		}
+
+		if exportCurCount > exportMaxCount {
+			// 导出次数达到上限，退出程序，汇报错误
+			logger.Error("Cannot export excel: " + global.Deli.FromDate.ToString())
+			os.Exit(0)
+		}
+
+		// 10S后重新获取
+		logger.Info("Wait to export...")
+		time.Sleep(10 * time.Second)
 	}
 
 	// 第五步，下载文件到本地

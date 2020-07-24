@@ -27,8 +27,6 @@ var exportDate model.Date
 // ExportExcelFile 导出excel文件路径
 // @brief date 考勤日期
 func (e *exportExcel) ExportExcelFile(date model.Date) error {
-	logger.Info("Start export excel...")
-
 	exportDate = date
 
 	cc := colly.NewCollector()
@@ -71,7 +69,6 @@ func (e *exportExcel) ExportExcelFile(date model.Date) error {
 			if err = json.Unmarshal(r.Body, e); err == nil {
 				// 此处有两种结果，需检查
 				checkExportUrl()
-				logger.Info("Export excel succeeded")
 				return
 			}
 		}
